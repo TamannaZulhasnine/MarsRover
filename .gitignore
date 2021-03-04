@@ -1,0 +1,13 @@
+/build/
+*.suo
+*.user
+_ReSharper.*/
+*.sdf
+bin/
+obj/
+*.opensdf
+*.tlog
+*.log
+.vs
+/.vs/
+

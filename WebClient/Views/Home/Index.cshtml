@@ -1,0 +1,64 @@
+﻿@using WebClient.Models
+@model WebClient.Models.Photo
+
+@{
+    ViewData["Title"] = "Home Page";
+
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .header img {
+            float: left;
+            background: #555;
+        }
+        .header h1 {
+            position: relative;
+        }
+        .input {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+</body>
+</html>
+
+<div class="text-center">
+    <div class="header" >
+        <img src="~/Content/logo/download.png" alt="logo" width="100" />
+        <h1 class="display-4">Mars Rover Photos</h1>
+    </div>
+    <div>
+        <p class="col-md-12">
+            This API is designed to collect image data gathered by NASA's Curiosity, Opportunity, and Spirit rovers on Mars and make it more easily available to other developers, educators, and citizen scientists. This API is maintained by Chris Cerami.
+
+            Each rover has its own set of photos stored in the database, which can be queried separately. There are several possible queries that can be made against the API. Photos are organized by the sol (Martian rotation or day) on which they were taken, counting up from the rover's landing date. A photo taken on Curiosity's 1000th Martian sol exploring Mars, for example, will have a sol attribute of 1000. If instead you prefer to search by the Earth date on which a photo was taken, you can do that too.
+
+            Along with querying by date, results can also be filtered by the camera with which it was taken and responses will be limited to 25 photos per call. Queries that should return more than 25 photos will be split onto several pages, which can be accessed by adding a 'page' param to the query.
+        </p>
+    </div>
+    <div class="col-md-9">
+        <div class="panel panel-default">
+            <div class="panel-heading">Select the date</div>
+            <div class="panel-body">
+                
+                @Html.DropDownListFor(model => model.Earth_Date,
+                    new List<SelectListItem> {
+                        new SelectListItem { Value = "0" , Text = "02/27/17" },
+                        new SelectListItem { Value = "1" , Text = "June 2, 2018" },
+                        new SelectListItem { Value = "2" , Text = "Jul-13-2016" },
+                        new SelectListItem { Value = "2" , Text = "April 31, 2018" }
+                    },
+                    new { @class = "myselect" })
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9"> <input type="submit" value="Submit my answer" /></div>
+
+
+    <div class="col-md-9"><a href="https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date=2015-6-3&amp;api_key=DEMO_KEY">See the Raw data</a>.</div> 
+</div>

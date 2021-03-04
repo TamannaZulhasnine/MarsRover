@@ -1,0 +1,14 @@
+﻿@using System.IO
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>Index</h2>
+
+<p>Photo!</p>
+
+@foreach (var imgPath in Directory.GetFiles(("Content/images"), "*.jpg"))
+{
+    var img = new FileInfo(imgPath);
+    <img src="@Url.Content(String.Format("~/Content/images/{0}", img.Name))", width="200" />
+}
