@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WebClient.Models
+﻿namespace WebClient.Models
 {
     public class Camera
     {

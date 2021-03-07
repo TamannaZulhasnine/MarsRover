@@ -5,16 +5,16 @@ using NLog;
 
 namespace MarsRover
 {
-    class Program
+    internal class Program
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Logger.Trace("Application Started");
-            string path = @".\dates.txt";
-            
-            MarsRoverApiManager manager = new MarsRoverApiManager();
+            var path = @".\dates.txt";
+
+            var manager = new MarsRoverApiManager();
 
             if (File.Exists(path))
             {

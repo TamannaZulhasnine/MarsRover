@@ -1,9 +1,7 @@
-﻿@using WebClient.Models
-@model WebClient.Models.Photo
+﻿@model WebClient.Models.Photo
 
 @{
     ViewData["Title"] = "Home Page";
-
 }
 
 <!DOCTYPE html>
@@ -11,15 +9,13 @@
 <head>
     <style>
         .header img {
-            float: left;
             background: #555;
+            float: left;
         }
-        .header h1 {
-            position: relative;
-        }
-        .input {
-            position: relative;
-        }
+
+        .header h1 { position: relative; }
+
+        .input { position: relative; }
     </style>
 </head>
 <body>
@@ -28,8 +24,8 @@
 </html>
 
 <div class="text-center">
-    <div class="header" >
-        <img src="~/Content/logo/download.png" alt="logo" width="100" />
+    <div class="header">
+        <img src="~/Content/logo/download.png" alt="logo" width="100"/>
         <h1 class="display-4">Mars Rover Photos</h1>
     </div>
     <div>
@@ -45,20 +41,23 @@
         <div class="panel panel-default">
             <div class="panel-heading">Select the date</div>
             <div class="panel-body">
-                
+
                 @Html.DropDownListFor(model => model.Earth_Date,
-                    new List<SelectListItem> {
-                        new SelectListItem { Value = "0" , Text = "02/27/17" },
-                        new SelectListItem { Value = "1" , Text = "June 2, 2018" },
-                        new SelectListItem { Value = "2" , Text = "Jul-13-2016" },
-                        new SelectListItem { Value = "2" , Text = "April 31, 2018" }
+                    new List<SelectListItem>
+                    {
+                        new SelectListItem {Value = "0", Text = "02/27/17"},
+                        new SelectListItem {Value = "1", Text = "June 2, 2018"},
+                        new SelectListItem {Value = "2", Text = "Jul-13-2016"},
+                        new SelectListItem {Value = "2", Text = "April 31, 2018"}
                     },
-                    new { @class = "myselect" })
+                    new {@class = "myselect"})
             </div>
         </div>
     </div>
-    <div class="col-md-9"> <input type="submit" value="Submit my answer" /></div>
+    <div class="col-md-9">
+        <input type="submit" value="Submit my answer"/>
+    </div>
 
 
-    <div class="col-md-9"><a href="https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date=2015-6-3&amp;api_key=DEMO_KEY">See the Raw data</a>.</div> 
+    <div class="col-md-9"><a href="https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date=2015-6-3&amp;api_key=DEMO_KEY">See the Raw data</a>.</div>
 </div>

@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using MarsRover.Interfaces;
 using MarsRover.Models;
 using Newtonsoft.Json;
@@ -15,18 +12,11 @@ using NLog;
 
 namespace MarsRover
 {
-    public class MarsRoverApiManager
+    public class MarsRoverApiManager : IRoverApiManager
     {
-
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        private string uristring ="https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/";
-
-        public MarsRoverApiManager()
-        {
-            this.uristring = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/";
-            
-        }
+        private readonly string uristring = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/";
 
         public async void GetPhotosAsync(string date, string key)
         {
@@ -34,111 +24,88 @@ namespace MarsRover
 
             if (!string.IsNullOrEmpty(datePhoto))
             {
-                var uri = new Uri(uristring);
-                var pathBuilder = new UriBuilder(uri)
+                var uriPath = GetUriPath(uristring, datePhoto, key);
+
+                var response = GetResponseAsync(uriPath).Result;
+
+                if (!string.IsNullOrEmpty(response))
                 {
-                    Path = $"photos?earth_date={datePhoto}&api_key={key}"
+                    var data = JsonConvert.DeserializeObject<Photos>(response);
 
-                };
-                var uriPath = new Uri(uri, pathBuilder.Path).ToString();
-                var urlDataString = Uri.UnescapeDataString(uriPath);
-
-                Logger.Trace($"Get the image for uri {urlDataString}");
-
-                var client = new HttpClient();
-                var response = client.GetAsync(urlDataString).Result;
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var content =  await response.Content.ReadAsStringAsync();
-
-                    if (!string.IsNullOrEmpty(content))
+                    foreach (var photo in data.photos)
                     {
-                        var data = JsonConvert.DeserializeObject<Photos>(content);
-
-                        foreach (var photo in data.photos)
+                        var imageUri = new Uri(photo.Img_src);
+                        using (var webclient = new WebClient())
                         {
-                            var imageUri = new Uri(photo.Img_src);
-
-                            using (WebClient webclient = new WebClient())
-                            {
-                                Directory.CreateDirectory(@"c:\MarsRover");
-                                Logger.Info($"Download started for date {datePhoto}");
-                                webclient.DownloadFileTaskAsync(imageUri, string.Format(@"c:\MarsRover\image{0}.jpg", Guid.NewGuid().ToString())).Wait();
-                            }
+                            Directory.CreateDirectory(@"c:\MarsRover");
+                            Logger.Info($"Download started for date {datePhoto}");
+                            webclient.DownloadFileTaskAsync(imageUri,
+                            string.Format(@"c:\MarsRover\image{0}.jpg", Guid.NewGuid().ToString())).Wait();
                         }
-                    }
-                    else
-                    {
-                        Logger.Error("Content is empty!");
                     }
                 }
                 else
                 {
-                    Logger.Error("Internal server Error,Could not connect to server!");
+                   Logger.Error("Content is empty!");
                 }
-
                 Logger.Info($"Download Finished for date {datePhoto}");
             }
             else
             {
                 Logger.Error("Not Valid date to download picture!");
             }
-
-
         }
 
         public string GetDate(string date)
         {
             try
             {
-                DateTime newDate = DateTime.Parse(date, System.Globalization.CultureInfo.InvariantCulture);
+                var newDate = DateTime.Parse(date, CultureInfo.InvariantCulture);
                 return newDate.ToString("yyyy-MM-dd");
             }
             catch (FormatException)
             {
-               Logger.Error($"Wrong date and time format! for {date}");
+                Logger.Error($"Wrong date and time format! for {date}");
             }
 
-           return String.Empty;
+            return string.Empty;
         }
 
-        public async Task<string> GetJsonResponseAsync(Uri uri)
+        public Uri GetUriPath(string uriString, string datePhoto, string key)
+        {
+            var uri = new Uri(uriString);
+            var pathBuilder = new UriBuilder(uri)
+            {
+                Path = $"photos?earth_date={datePhoto}&api_key={key}"
+            };
+            var uriPath = new Uri(uri, pathBuilder.Path);
+            return uriPath;
+        }
+
+        public async Task<string> GetResponseAsync(Uri uri)
         {
             var url = uri?.AbsoluteUri;
             var client = new HttpClient();
-            
-            try
+            var urlDataString = Uri.UnescapeDataString(uri.ToString());
+
+            Debug.WriteLine($"Get the image for (uri={urlDataString}");
+            var response = await client.GetAsync(urlDataString) ??
+                           throw new ArgumentNullException($"GetJsonResponseAsync({url})");
+
+            // A non-OK response throws a web exception
+            if (response.StatusCode != HttpStatusCode.OK) throw new WebException($"{response.StatusCode}");
+
+            var requestResponse = string.Empty;
+            using (var responseStream = await response.Content.ReadAsStreamAsync())
             {
-                Debug.WriteLine($"GetJsonResponseAsync(url={url}");
-                var response = await client.GetAsync(uri) ?? throw new ArgumentNullException($"GetJsonResponseAsync({url})");
-
-                // A non-OK response throws a web exception
-                if (response.StatusCode != HttpStatusCode.OK)
-                {
-                    throw new WebException($"{response.StatusCode}");
-                }
-
-                var requestResponse = string.Empty;
-                using (var responseStream =  await response.Content.ReadAsStreamAsync())
-                {
-                    if (responseStream != null)
+                if (responseStream != null)
+                    using (var reader = new StreamReader(responseStream))
                     {
-                        using (var reader = new StreamReader(responseStream))
-                        {
-                            requestResponse = reader.ReadToEnd();
-                        }
+                        requestResponse = reader.ReadToEnd();
                     }
-                }
+            }
 
-                return requestResponse;
-            }
-            catch (Exception ex)
-            {
-                throw ;
-            }
+            return requestResponse;
         }
-
-
     }
 }
