@@ -12,6 +12,8 @@ namespace WebClient.Models
 
         public string Img_src { get; set; }
 
-        public DateTime Earth_Date { get; set; }
+        public string Date { get; set; }
+
+        
     }
 }

@@ -37,10 +37,11 @@ namespace MarsRover
                         var imageUri = new Uri(photo.Img_src);
                         using (var webclient = new WebClient())
                         {
-                            Directory.CreateDirectory(@"c:\MarsRover");
+                            var path = Directory.CreateDirectory(@"c:\MarsRover\" + datePhoto + @"\");
                             Logger.Info($"Download started for date {datePhoto}");
                             webclient.DownloadFileTaskAsync(imageUri,
-                            string.Format(@"c:\MarsRover\image{0}.jpg", Guid.NewGuid().ToString())).Wait();
+                            string.Format(path + "image{0}.jpg", Guid.NewGuid().ToString())).Wait();
+                            
                         }
                     }
                 }
