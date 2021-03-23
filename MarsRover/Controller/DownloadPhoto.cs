@@ -7,26 +7,38 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using MarsRover.Interfaces;
 using MarsRover.Models;
+using MarsRover.Services;
 using Newtonsoft.Json;
 using NLog;
 
-namespace MarsRover
+namespace MarsRover.Controller
 {
-    public class MarsRoverApiManager : IRoverApiManager
+    public class DownloadPhoto : IDownloadPhoto
     {
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private IHttpCommClientService client;
 
-        private readonly string uristring = "https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/";
+        public DownloadPhoto()
+        {
+            
+        }
 
-        public async void GetPhotosAsync(string date, string key)
+        public DownloadPhoto(IHttpCommClientService client)
+        {
+            this.client = client ?? throw new ArgumentNullException(
+                              nameof(client),
+                              "Common client cannot be null."); ;
+        }
+        public async Task DownloadPhotoAsync(string date, string key, string uri)
         {
             var datePhoto = GetDate(date);
 
             if (!string.IsNullOrEmpty(datePhoto))
             {
-                var uriPath = GetUriPath(uristring, datePhoto, key);
+                var uriPath = GetUriPath(uri, datePhoto, key);
+                Logger.Info($"Download Photo from URL {0}", uriPath);
 
-                var response = GetResponseAsync(uriPath).Result;
+                var response = await this.client.GetResponseAsync(uriPath);
 
                 if (!string.IsNullOrEmpty(response))
                 {
@@ -39,23 +51,27 @@ namespace MarsRover
                         {
                             var path = Directory.CreateDirectory(@"c:\MarsRover\" + datePhoto + @"\");
                             Logger.Info($"Download started for date {datePhoto}");
-                            webclient.DownloadFileTaskAsync(imageUri,
-                            string.Format(path + "image{0}.jpg", Guid.NewGuid().ToString())).Wait();
-                            
+                            await webclient.DownloadFileTaskAsync(imageUri,
+                            string.Format(path + "image{0}.jpg", Guid.NewGuid().ToString()));
+
                         }
-                    }
+                    }                    
                 }
                 else
                 {
-                   Logger.Error("Content is empty!");
+                    Logger.Error("Content is empty!");
                 }
                 Logger.Info($"Download Finished for date {datePhoto}");
+                
             }
             else
             {
                 Logger.Error("Not Valid date to download picture!");
+                
             }
         }
+
+
 
         public string GetDate(string date)
         {
@@ -81,32 +97,6 @@ namespace MarsRover
             };
             var uriPath = new Uri(uri, pathBuilder.Path);
             return uriPath;
-        }
-
-        public async Task<string> GetResponseAsync(Uri uri)
-        {
-            var url = uri?.AbsoluteUri;
-            var client = new HttpClient();
-            var urlDataString = Uri.UnescapeDataString(uri.ToString());
-
-            Debug.WriteLine($"Get the image for (uri={urlDataString}");
-            var response = await client.GetAsync(urlDataString) ??
-                           throw new ArgumentNullException($"GetJsonResponseAsync({url})");
-
-            // A non-OK response throws a web exception
-            if (response.StatusCode != HttpStatusCode.OK) throw new WebException($"{response.StatusCode}");
-
-            var requestResponse = string.Empty;
-            using (var responseStream = await response.Content.ReadAsStreamAsync())
-            {
-                if (responseStream != null)
-                    using (var reader = new StreamReader(responseStream))
-                    {
-                        requestResponse = reader.ReadToEnd();
-                    }
-            }
-
-            return requestResponse;
         }
     }
 }

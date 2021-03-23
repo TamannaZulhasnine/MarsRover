@@ -10,5 +10,20 @@
 @foreach (var imgPath in Directory.GetFiles("Content/images", "*.jpg"))
 {
     var img = new FileInfo(imgPath);
-    <img src="@Url.Content(string.Format("~/Content/images/{0}", img.Name))", width="200"/>
+    <img src="@Url.Content(string.Format("~/Content/images/{0}", img.Name))" , width="200" />
 }
+
+<script type="text/javascript">
+    var folder = "C:/MarsRover/2017-02-27";
+
+    $.ajax({
+        url: folder,
+        success: function (data) {
+            $(data).find("a").attr("href", function (i, val) {
+                if (val.match(/\.(jpe?g|png|gif)$/)) {
+                    $("body").append("
+                        < img src = '" + folder + val + "' > ");
+                }
+            });
+        }
+</script>

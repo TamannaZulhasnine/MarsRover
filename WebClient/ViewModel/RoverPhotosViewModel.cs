@@ -10,7 +10,7 @@ namespace WebClient.ViewModel
     {
         public List<string> ListDate { get; set; }
         public string SelectedDate { get; set; }
-        public SelectList Date { get; set; }
+        public IEnumerable<SelectListItem> Date { get; set; }
 
        
     }
